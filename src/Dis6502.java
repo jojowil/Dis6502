@@ -4,6 +4,7 @@ import java.util.HashMap;
 
 public class Dis6502 {
 
+    // Dubiously allowed because of Object!
     static Object[][] Opcodes = {
             /* Name, Imm,  ZP,   ZPX,  ZPY,  ABS, ABSX, ABSY,  IND, INDX, INDY, IMPL, REL */
             {"ADC", 0x69, 0x65, 0x75, null, 0x6d, 0x7d, 0x79, null, 0x61, 0x71, null, null},
@@ -230,7 +231,7 @@ public class Dis6502 {
     public static void main(String[] args) throws IOException {
 
         //FileInputStream in = new FileInputStream("micromon-36864.prg");
-        FileInputStream in = new FileInputStream("congrats.prg");
+        FileInputStream in = new FileInputStream("examples/congrats.prg");
         //FileInputStream in = new FileInputStream("mult.prg");
 
         byte[] file = in.readAllBytes();
