@@ -17,6 +17,6 @@ Everything in this design is Java 21 and C23 compatible.
 
 ## The Language
 
-This project is based on the [Commodore 64 Assembler](https://www.c64-wiki.com/wiki/Assembler) which has a 
+This project is based on the [Commodore 64 Assembly Language](https://www.c64-wiki.com/wiki/Assembler) which has a 
 specific format where the loading address is the first two byte in little endian format.
 There are [tons of examples, forums and further documentation](https://retro-programming.com/hello-world-in-the-c64-machine-code/) all over the Internet.
