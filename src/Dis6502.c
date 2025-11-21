@@ -104,6 +104,7 @@ static void hexDump(const unsigned char* bytes, long length) {
     printf(" %s\n", chars);
 }
 
+// Perform disassembly without labels or synchronizing. MOS 6502 only!
 static void disassemble (const unsigned char* bytes, int len, int pass) {
     // we and with 0xff (an int) to avoid sign extension
     // and preserve the unsigned nature of the value.
@@ -238,6 +239,7 @@ static void disassemble (const unsigned char* bytes, int len, int pass) {
     }
 }
 
+// Read a complete file into memory.
 char* readAllBytes(const char* fname, long *len) {
     // open file
     FILE *file = fopen(fname, "r");
@@ -271,14 +273,17 @@ char* readAllBytes(const char* fname, long *len) {
 
 int main(int argc, char ** argv) {
 
+    // check for program file
     if (argc != 2) {
         printf("\nMust provide source.\n\n");
         exit(3);
     }
 
+    // Read file contents
     int flen;
     unsigned char* file = readAllBytes(argv[1], &flen);
 
+    // Display our findings
     hexDump(file, flen);
     printf("\n");
     disassemble(file, flen, 1);

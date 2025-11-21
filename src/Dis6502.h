@@ -1,7 +1,7 @@
 #ifndef DIS6502_DIS6502_H
 #define DIS6502_DIS6502_H
 
-typedef struct Opcode {
+typedef struct {
     char *mnemonic;
     unsigned char opcodes[12];
 } Opcode;
