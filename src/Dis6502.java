@@ -137,7 +137,7 @@ public class Dis6502 {
             String opstr = (String)Opcodes[row][0];
 
             // need at least one more byte. if we don't have enough to finish the op
-            // then
+            // then we'll display individual bytes.
             if ( (x+2 == bal && col != 11) ||
                     ( x+3 == bal && (col >= 5 && col <= 8) ) ) {
                 for ( ; x < bal; x++ ) {
@@ -148,7 +148,7 @@ public class Dis6502 {
                 break;
             }
 
-            // build a real
+            // build a real line of output based on addressing mode
             String output = switch(col) {
 
                 // Imm, 1
@@ -178,7 +178,7 @@ public class Dis6502 {
                     int lo = bytes[++x] & 0xff;
                     int hi = bytes[++x] & 0xff;
                     int addr = hi * 256 + lo;
-                    String out = String.format("%04X:   %02X %02X %02X   %3s $%04X", pc, op, lo, hi, opstr,addr);
+                    String out = String.format("%04X:   %02X %02X %02X   %3s $%04X", pc, op, lo, hi, opstr, addr);
                     if (col != 5)
                         out += String.format(",%c", 'X' + col - 6);
                     pc += 3;
@@ -224,6 +224,7 @@ public class Dis6502 {
                     yield(out);
                 }
             };
+            // Todo: implement second pass to introduce labels alongside addresses.
             if ( pass == 2 )
                 System.out.println(output);
         }
@@ -231,10 +232,12 @@ public class Dis6502 {
 
     public static void main(String[] args) throws IOException {
 
-        //FileInputStream in = new FileInputStream("micromon-36864.prg");
-        FileInputStream in = new FileInputStream("examples/congrats.prg");
-        //FileInputStream in = new FileInputStream("mult.prg");
+        if (args.length != 1) {
+            System.out.println("Must provide source.");
+            System.exit(3);
+        }
 
+        FileInputStream in = new FileInputStream(args[0]);
         byte[] file = in.readAllBytes();
         in.close();
 
