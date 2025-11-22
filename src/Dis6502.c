@@ -275,7 +275,7 @@ int main(int argc, char ** argv) {
 
     // check for program file
     if (argc != 2) {
-        printf("\nMust provide source.\n\n");
+        printf("\nMust provide object file.\n\n");
         exit(3);
     }
 
