@@ -81,10 +81,11 @@ Opcode opcodeTable[] = {
 int opcodeRows = sizeof opcodeTable / sizeof opcodeTable[0];
 #define opcodeCols 12 // Yeah, it's hard coded...
 
-static int labelNum = 0;
+//static int labelNum = 0;
 
 // A Sample hexdump (https://programmingby.design/algorithms/the-hex-dump/)
 static void hexDump(const unsigned char* bytes, long length) {
+    if (length == 0 || bytes == NULL) return;
     // we and with 0xff to mask off the bits when sign-extended.
     int st = bytes[1] * 256 + bytes[0];
     printf("%d\n", st);
@@ -119,6 +120,8 @@ static void hexDump(const unsigned char* bytes, long length) {
 
 // Perform disassembly without labels or synchronizing. MOS 6502 only!
 static void disassemble (const unsigned char* bytes, long len, int pass) {
+    if (len == 0 || bytes == NULL) return;
+
     // we and with 0xff (an int) to avoid sign extension
     // and preserve the unsigned nature of the value.
     int pc = (bytes[1] & 0xff) * 256 + (bytes[0] & 0xff);
@@ -227,7 +230,7 @@ static void disassemble (const unsigned char* bytes, long len, int pass) {
                 int offraw = bytes[++x];
                 int off = bytes[x] & 0xff;
                 int dst = pc + offraw + 2;
-                char *dest = "UNKNOWN!";
+                //char *dest = "UNKNOWN!";
                 /*
                 if ( pass == 1 )
                     labels.put(dst, "label"+labelNum++);
