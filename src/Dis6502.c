@@ -2,7 +2,20 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "Dis6502.h"
+static void hexDump(const unsigned char* bytes, long length);
+static void disassemble (const unsigned char* bytes, int long, int pass);
+static unsigned char* readAllBytes(const char* fname, long *len);
+
+typedef struct {
+    char *mnemonic;
+    unsigned char opcodes[12];
+} Opcode;
+
+typedef struct {
+    char *label;
+    unsigned int addr;
+} Label;
+
 
 // A nicely formatted opcode table with mnemonic and opcode values. 0xff means can't happen.
 Opcode opcodeTable[] = {
@@ -105,7 +118,7 @@ static void hexDump(const unsigned char* bytes, long length) {
 }
 
 // Perform disassembly without labels or synchronizing. MOS 6502 only!
-static void disassemble (const unsigned char* bytes, int len, int pass) {
+static void disassemble (const unsigned char* bytes, long len, int pass) {
     // we and with 0xff (an int) to avoid sign extension
     // and preserve the unsigned nature of the value.
     int pc = (bytes[1] & 0xff) * 256 + (bytes[0] & 0xff);
@@ -120,12 +133,12 @@ static void disassemble (const unsigned char* bytes, int len, int pass) {
 
         // find the matching opcode in Opcodes
         for (row = 0; row < opcodeRows-1; row++)
-            for (col = 1; row < opcodeRows-1 && col < opcodeCols; col++) {
+            for (col = 0; row < opcodeRows-1 && col < opcodeCols; col++) {
                 // skip the 0xffs!
                 if (opcodeTable[row].opcodes[col] == 0xff)
                     continue;
                 // debug
-                // printf("row %d, col %d, val %d\n", row, col, (int)Opcodes[row][col]);
+                //printf("row %d, col %d, val %d\n", row, col, (int)opcodeTable[row].opcodes[col]);
                 if ( opcodeTable[row].opcodes[col] == op ) {
                     // printf("Found it!\n");
                     goto found; // yeah, it's a goto. Locking in the row/col values.
@@ -151,56 +164,56 @@ static void disassemble (const unsigned char* bytes, int len, int pass) {
         // build a real line of output based on addressing mode
         char output[100];
         switch (col) {
-            // Imm, 1
-            case 1 :
+            // Imm, 0
+            case 0 :
                 int imm = bytes[++x] & 0xff;
                 snprintf(output, sizeof output, "%04X:   %02X %02X      %3s #$%02X", pc, op, imm, opstr, imm);
                 pc += 2;
                 break;
 
-            // ZP, 2
-            // ZPX, 3
-            // ZPY, 4
-            case 2: case 3: case 4:
+            // ZP, 1
+            // ZPX, 2
+            // ZPY, 3
+            case 1: case 2: case 3:
                 int zp = bytes[++x] & 0xff;
                 char *end = "";
                 switch (col) {
-                    case 3:
+                    case 2:
                         end = ",X"; break;
-                    case 4:
+                    case 3:
                         end = ",Y"; break;
                 }
                 snprintf(output, sizeof output, "%04X:   %02X %02X      %3s $%02X%s", pc, op, zp, opstr, zp, end);
                 pc += 2;
                 break;
 
-            // ABS, 5
-            // ABSX, 6
-            // ABSY, 7
-            case 5: case 6: case 7:
+            // ABS, 4
+            // ABSX, 5
+            // ABSY, 6
+            case 4: case 5: case 6:
                 int lo = bytes[++x] & 0xff;
                 int hi = bytes[++x] & 0xff;
                 int addr = hi * 256 + lo;
                 end = "";
                 switch (col) {
-                    case 6:
+                    case 5:
                         end = ",X"; break;
-                    case 7:
+                    case 6:
                         end = ",Y"; break;
                 }
                 snprintf(output, sizeof output, "%04X:   %02X %02X %02X   %3s $%04X%s", pc, op, lo, hi, opstr, addr, end);
                 pc += 3;
                 break;
 
-            // IND, 8
-            // INDX, 9
-            // INDY, 10
-            case 8: case 9: case 10:
+            // IND, 7
+            // INDX, 8
+            // INDY, 9
+            case 7: case 8: case 9:
                 zp = bytes[++x] & 0xff;
                 switch (col) {
-                    case 9:
+                    case 8:
                         end = ",X)"; break;
-                    case 10:
+                    case 9:
                         end = "),Y"; break;
                     default:
                         end = ")"; break;
@@ -209,8 +222,8 @@ static void disassemble (const unsigned char* bytes, int len, int pass) {
                 pc += 2;
                 break;
 
-            // BRA 12
-            case 12:
+            // BRA 11
+            case 11:
                 int offraw = bytes[++x];
                 int off = bytes[x] & 0xff;
                 int dst = pc + offraw + 2;
@@ -226,7 +239,7 @@ static void disassemble (const unsigned char* bytes, int len, int pass) {
                 pc += 2;
                 break;
 
-            // SNGL, 11
+            // SNGL, 10
             // also bad instructions
             default:
                 snprintf(output, sizeof output, "%04X:   %02X         %3s", pc, op, opstr);
@@ -240,7 +253,7 @@ static void disassemble (const unsigned char* bytes, int len, int pass) {
 }
 
 // Read a complete file into memory.
-char* readAllBytes(const char* fname, long *len) {
+static unsigned char* readAllBytes(const char* fname, long *len) {
     // open file
     FILE *file = fopen(fname, "r");
     if (file == NULL) {
@@ -254,7 +267,7 @@ char* readAllBytes(const char* fname, long *len) {
     rewind(file);
 
     // get the mem
-    char *buffer = (char *) malloc(fileSize * sizeof(char) + 1);
+    unsigned char *buffer = malloc(fileSize * sizeof(char) + 1);
 
     // Read the entire file into the buffer
     size_t bytesRead = fread(buffer, 1, fileSize, file);
@@ -280,7 +293,7 @@ int main(int argc, char ** argv) {
     }
 
     // Read file contents
-    int flen;
+    long flen;
     unsigned char* file = readAllBytes(argv[1], &flen);
 
     // Display our findings
