@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include "git-banned.h"
 
 static void hexDump(const unsigned char* bytes, long length);
 static void disassemble (const unsigned char* bytes, int long, int pass);
