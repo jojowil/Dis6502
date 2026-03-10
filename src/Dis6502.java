@@ -138,8 +138,8 @@ public class Dis6502 {
 
             // need at least one more byte. if we don't have enough to finish the op
             // then we'll display individual bytes.
-            if ( (x+2 == bal && col != 11) ||
-                    ( x+3 == bal && (col >= 5 && col <= 8) ) ) {
+            if ( (x+2 > bal && col != 11) ||
+                    ( x+3 > bal && (col >= 5 && col <= 8) ) ) {
                 for ( ; x < bal; x++ ) {
                     op = bytes[x] & 0xff;
                     if ( pass == 2 )
